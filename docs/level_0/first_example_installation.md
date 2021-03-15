@@ -4,7 +4,7 @@ In this example we describe how to deploy your first component with Landscaper. 
 chart deployment. 
 
 We have uploaded the component into an OCI registry. You find it
-[here](https://eu.gcr.io/sap-gcp-cp-k8s-stable-hub/examples/landscaper/docs/component-descriptors/github.com/gardener/landscaper/first-example).
+[here](https://eu.gcr.io/gardener-project/landscaper/tutorials/components/component-descriptors/github.com/gardener/landscaper/first-example).
 
 To try out this example by yourself you need to install Landscaper (see [here](../gettingstarted/install-landscaper-controller.md)).
 
@@ -59,7 +59,7 @@ spec:
     ref:
       repositoryContext:
         type: ociRegistry
-        baseUrl: eu.gcr.io/sap-gcp-cp-k8s-stable-hub/examples/landscaper/docs
+        baseUrl: eu.gcr.io/gardener-project/landscaper/tutorials/components
       componentName: github.com/gardener/landscaper/first-example
       version: v0.1.0
 
