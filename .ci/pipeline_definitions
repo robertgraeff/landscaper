@@ -77,7 +77,6 @@ landscaper:
           trait_depends:
           - publish
           image: 'eu.gcr.io/gardener-project/landscaper-service/integration-test:1.20.6-alpine3.18'
-          output_dir: 'integration_test_cnudie'
         integration_test_ocm:
           execute:
           - integration-test
@@ -85,7 +84,6 @@ landscaper:
           trait_depends:
           - publish
           image: 'eu.gcr.io/gardener-project/landscaper-service/integration-test:1.20.6-alpine3.18'
-          output_dir: 'integration_test_ocm'
     pull-request:
       steps:
         integration_test_cnudie:
@@ -127,7 +125,6 @@ landscaper:
           trait_depends:
           - publish
           image: 'eu.gcr.io/gardener-project/landscaper-service/integration-test:1.20.6-alpine3.18'
-          output_dir: 'integration_test_cnudie'
         integration_test_ocm:
           execute:
           - integration-test
@@ -135,11 +132,9 @@ landscaper:
           trait_depends:
           - publish
           image: 'eu.gcr.io/gardener-project/landscaper-service/integration-test:1.20.6-alpine3.18'
-          output_dir: 'integration_test_ocm'
         update_release:
           inputs:
-            INTEGRATION_TEST_CNUDIE_PATH: integration_test_cnudie_path
-            INTEGRATION_TEST_OCM_PATH: integration_test_ocm_path
+            INTEGRATION_TEST_PATH: integration_test_path
           execute:
           - update_release.py
           trait_depends:
