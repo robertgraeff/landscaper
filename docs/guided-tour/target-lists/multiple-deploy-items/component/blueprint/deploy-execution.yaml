@@ -3,7 +3,7 @@ deployItems:
 {{ $namespace := .imports.namespace }}
 {{ range $target := .imports.clusters }}
 {{ $originalName := getOriginalName $target }}
-  - name: di{{ $originalName }}
+  - name: di-{{ $originalName }}
     type: landscaper.gardener.cloud/kubernetes-manifest
 
     target:
