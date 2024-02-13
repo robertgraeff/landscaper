@@ -6,6 +6,10 @@ deployItems:
   - name: di-{{ $originalName }}
     type: landscaper.gardener.cloud/kubernetes-manifest
 
+#    target:
+#      name: {{ $target.metadata.name }}
+#      namespace: {{ $target.metadata.namespace }}
+
     target:
       import: clusters
       originalName: {{ $originalName }}
@@ -20,7 +24,7 @@ deployItems:
             apiVersion: v1
             kind: ConfigMap
             metadata:
-              name: multiple-items-{{ $originalName }}
+              name: targetlistref-{{ $originalName }}
               namespace: {{ $namespace }}
             data:
               {{- index $config $originalName | toYaml | nindent 14 }}
