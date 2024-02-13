@@ -22,9 +22,9 @@ spec:
     targets:
       - name: clusters
         targets:
-          - clusterred
-          - clustergreen
-          - clusterblue
+          - cluster-red
+          - cluster-green
+          - cluster-blue
     data:
       - name: config
         dataRef: config
