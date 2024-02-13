@@ -4,23 +4,28 @@ metadata:
   name: config
   namespace: ${namespace}
 data:
-  bluecluster:
+  clusterblue:
+    color: blue
     cpu: 100m
     memory: 100Mi
 
-  greencluster:
+  clustergreen:
+    color: green
     cpu: 120m
     memory: 120Mi
 
-  yellowcluster:
+  clusteryellow:
+    color: yellow
     cpu: 140m
     memory: 140Mi
 
-  orangecluster:
+  clusterorange:
+    color: orange
     cpu: 160m
     memory: 160Mi
 
-  redcluster:
+  clusterred:
+    color: red
     cpu: 180m
     memory: 180Mi
 
