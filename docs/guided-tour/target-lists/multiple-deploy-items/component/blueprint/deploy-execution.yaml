@@ -21,7 +21,7 @@ deployItems:
             kind: ConfigMap
             metadata:
               name: multiple-items-{{ $originalName }}
-              namespace: {{ $namespace }}
+              namespace: example
             data:
               {{- index $config $originalName | toYaml | nindent 14 }}
 {{ end }}

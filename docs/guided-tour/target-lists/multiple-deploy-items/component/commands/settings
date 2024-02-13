@@ -5,4 +5,4 @@ REPO_BASE_URL=eu.gcr.io/gardener-project/landscaper/examples
 TARGET_CLUSTER_KUBECONFIG_FOLDER="/Users/${USER}/tmp/kubes"
 
 # namespace for the resources in the resource cluster, e.g. the installations, target etc.
-NAMESPACE="example"
+NAMESPACE="cu-example"
