@@ -31,13 +31,13 @@ mako-render "${COMPONENT_DIR}/installation/context.yaml.tpl" \
   --var namespace="${NAMESPACE}" \
   --var repoBaseUrl="${REPO_BASE_URL}" \
   --output-file=${outputFile}
-kubectl apply -f ${outputFile}
+kubectl delete -f ${outputFile}
 
 outputFile="${TMP_DIR}/dataobject.yaml"
 mako-render "${COMPONENT_DIR}/installation/dataobject.yaml.tpl" \
   --var namespace="${NAMESPACE}" \
   --output-file=${outputFile}
-kubectl apply -f ${outputFile}
+kubectl delete -f ${outputFile}
 
 # Iterate over all files in the directory
 for TARGET_CLUSTER_KUBECONFIG_PATH in "$TARGET_CLUSTER_KUBECONFIG_FOLDER"/*
@@ -56,15 +56,8 @@ do
          --var color="${color}" \
          --var kubeconfig_path="${TARGET_CLUSTER_KUBECONFIG_PATH}" \
          --output-file=${outputFile}
-       kubectl apply -f ${outputFile}
+       kubectl delete -f ${outputFile}
     done
-
-    outputFile="${TMP_DIR}/installation.yaml"
-    mako-render "${COMPONENT_DIR}/installation/installation.yaml.tpl" \
-      --var namespace="${NAMESPACE}" \
-      --output-file=${outputFile}
-    kubectl apply -f ${outputFile}
-
   fi
 done
 
