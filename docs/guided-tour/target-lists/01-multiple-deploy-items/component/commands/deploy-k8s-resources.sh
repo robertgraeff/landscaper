@@ -62,6 +62,7 @@ do
     outputFile="${TMP_DIR}/installation.yaml"
     mako-render "${COMPONENT_DIR}/installation/installation.yaml.tpl" \
       --var namespace="${NAMESPACE}" \
+      --var targetNamespace="${TARGET_NAMESPACE}" \
       --output-file=${outputFile}
     kubectl apply -f ${outputFile}
 

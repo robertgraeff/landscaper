@@ -6,3 +6,6 @@ TARGET_CLUSTER_KUBECONFIG_FOLDER="/Users/${USER}/tmp/kubes"
 
 # namespace for the resources in the resource cluster, e.g. the installations, target etc.
 NAMESPACE="cu-example"
+
+# namespace for the deployed objects of the deploy items
+TARGET_NAMESPACE="example"

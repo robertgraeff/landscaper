@@ -30,4 +30,4 @@ spec:
         dataRef: config
 
   importDataMappings:
-    namespace: ${namespace}
+    namespace: ${targetNamespace}
