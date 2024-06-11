@@ -8,14 +8,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/open-component-model/ocm/pkg/common"
-
 	"github.com/mandelsoft/filepath/pkg/filepath"
 	"github.com/mandelsoft/vfs/pkg/memoryfs"
+	"github.com/mandelsoft/vfs/pkg/vfs"
+	"github.com/open-component-model/ocm/pkg/common"
 	"github.com/open-component-model/ocm/pkg/contexts/ocm"
 	bpdownload "github.com/open-component-model/ocm/pkg/contexts/ocm/download/handlers/blueprint"
-
-	"github.com/mandelsoft/vfs/pkg/vfs"
 
 	"github.com/gardener/landscaper/apis/mediatype"
 	"github.com/gardener/landscaper/pkg/components/cache/blueprint"
@@ -38,18 +36,7 @@ func New() *BlueprintHandler {
 	}
 }
 
-func (h *BlueprintHandler) GetResourceContent(ctx context.Context, r model.Resource, access ocm.ResourceAccess) (*model.TypedResourceContent, error) {
-	res, err := blueprint.GetBlueprintStore().Get(ctx, r.GetCachingIdentity(ctx))
-	if err != nil {
-		return nil, err
-	}
-	if res != nil {
-		return &model.TypedResourceContent{
-			Type:     r.GetType(),
-			Resource: res,
-		}, nil
-	}
-
+func (h *BlueprintHandler) GetResourceContent(ctx context.Context, _ model.Resource, access ocm.ResourceAccess) (*model.TypedResourceContent, error) {
 	fs := memoryfs.New()
 	pr := common.NewPrinter(nil)
 	ok, _, err := bpdownload.New().Download(pr, access, filepath.Join("/"), fs)
@@ -61,11 +48,6 @@ func (h *BlueprintHandler) GetResourceContent(ctx context.Context, r model.Resou
 	}
 
 	typedResourceContent, err := h.Prepare(ctx, fs)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = blueprint.GetBlueprintStore().Put(ctx, r.GetCachingIdentity(ctx), typedResourceContent)
 	if err != nil {
 		return nil, err
 	}
