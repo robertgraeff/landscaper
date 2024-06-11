@@ -37,6 +37,7 @@ func New() *BlueprintHandler {
 		cache: blueprint.GetBlueprintStore(),
 	}
 }
+
 func (h *BlueprintHandler) GetResourceContent(ctx context.Context, r model.Resource, access ocm.ResourceAccess) (*model.TypedResourceContent, error) {
 	res, err := blueprint.GetBlueprintStore().Get(ctx, r.GetCachingIdentity(ctx))
 	if err != nil {

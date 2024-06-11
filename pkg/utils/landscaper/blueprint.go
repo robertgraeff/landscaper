@@ -379,7 +379,7 @@ func (r *BlueprintRenderer) renderSubInstallations(input *ResolvedInstallation, 
 		}
 
 		subCd.Reference.RepositoryContext = subInstRepositoryContext
-		subBlueprint, err := lsblueprints.Resolve(ctx, r.registryAccess, subCd.Reference, *subBlueprintDef)
+		subBlueprint, err := lsblueprints.Resolve(ctx, r.registryAccess, subCd.Reference, *subBlueprintDef, nil)
 		if err != nil {
 			return nil, nil, fmt.Errorf("unable to resolve blueprint for subinstallation %q: %w", subInstTmpl.Name, err)
 		}
