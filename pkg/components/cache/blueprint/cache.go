@@ -8,15 +8,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
 	"os"
 	"path/filepath"
 	"sync"
 	"time"
-
-	"github.com/gardener/landscaper/pkg/components/cache"
-	"github.com/gardener/landscaper/pkg/components/model"
-	"github.com/gardener/landscaper/pkg/landscaper/blueprints"
 
 	"github.com/mandelsoft/vfs/pkg/memoryfs"
 	"github.com/mandelsoft/vfs/pkg/projectionfs"
@@ -29,7 +24,11 @@ import (
 	lsv1alpha1 "github.com/gardener/landscaper/apis/core/v1alpha1"
 	"github.com/gardener/landscaper/controller-utils/pkg/logging"
 	"github.com/gardener/landscaper/pkg/api"
+	"github.com/gardener/landscaper/pkg/components/cache"
+	"github.com/gardener/landscaper/pkg/components/model"
+	blueprints2 "github.com/gardener/landscaper/pkg/landscaper/blueprints"
 	"github.com/gardener/landscaper/pkg/utils"
+	"github.com/gardener/landscaper/pkg/utils/blueprints"
 )
 
 var storeSingleton *Store
@@ -203,7 +202,7 @@ func (s *Store) CurrentSize() int64 {
 func (s *Store) updateUsage(size int64) {
 	s.currentSize = s.currentSize + size
 	s.usage = float64(s.currentSize) / float64(s.size)
-	blueprints.DiskUsage.Set(float64(s.currentSize))
+	blueprints2.DiskUsage.Set(float64(s.currentSize))
 }
 
 // Get reads the blueprint from the filesystem.
