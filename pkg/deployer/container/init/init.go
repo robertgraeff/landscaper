@@ -12,7 +12,6 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/mandelsoft/vfs/pkg/memoryfs"
 	"github.com/mandelsoft/vfs/pkg/projectionfs"
 	"github.com/mandelsoft/vfs/pkg/vfs"
 	ocmutils "github.com/open-component-model/ocm/pkg/contexts/ocm/utils"
@@ -29,7 +28,6 @@ import (
 	containerv1alpha1 "github.com/gardener/landscaper/apis/deployer/container/v1alpha1"
 	"github.com/gardener/landscaper/controller-utils/pkg/logging"
 	"github.com/gardener/landscaper/pkg/api"
-	"github.com/gardener/landscaper/pkg/components/cache/blueprint"
 	"github.com/gardener/landscaper/pkg/components/model"
 	"github.com/gardener/landscaper/pkg/components/registries"
 	"github.com/gardener/landscaper/pkg/deployer/container"
@@ -172,12 +170,6 @@ func run(ctx context.Context, opts *options, kubeClient client.Client, fs vfs.Fi
 
 	if providerConfig.Blueprint != nil {
 		log.Info("Getting blueprint content")
-		// setup a temporary blueprint store
-		store, err := blueprint.DefaultStore(memoryfs.New())
-		if err != nil {
-			return fmt.Errorf("unable to setup default blueprint store: %w", err)
-		}
-		blueprint.SetStore(store)
 		contentFS, err := projectionfs.New(fs, opts.ContentDirPath)
 		if err != nil {
 			return fmt.Errorf("unable to create projection filesystem for path %s: %w", opts.ContentDirPath, err)

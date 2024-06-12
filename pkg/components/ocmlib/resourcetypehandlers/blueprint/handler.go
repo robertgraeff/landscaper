@@ -16,7 +16,7 @@ import (
 	bpdownload "github.com/open-component-model/ocm/pkg/contexts/ocm/download/handlers/blueprint"
 
 	"github.com/gardener/landscaper/apis/mediatype"
-	"github.com/gardener/landscaper/pkg/components/cache/blueprint"
+	componentscommon "github.com/gardener/landscaper/pkg/components/common"
 	"github.com/gardener/landscaper/pkg/components/model"
 	"github.com/gardener/landscaper/pkg/components/ocmlib/registries"
 )
@@ -26,14 +26,10 @@ func init() {
 	registries.Registry.Register(mediatype.OldBlueprintType, New())
 }
 
-type BlueprintHandler struct {
-	cache *blueprint.Store
-}
+type BlueprintHandler struct{}
 
 func New() *BlueprintHandler {
-	return &BlueprintHandler{
-		cache: blueprint.GetBlueprintStore(),
-	}
+	return &BlueprintHandler{}
 }
 
 func (h *BlueprintHandler) GetResourceContent(ctx context.Context, _ model.Resource, access ocm.ResourceAccess) (*model.TypedResourceContent, error) {
@@ -56,7 +52,7 @@ func (h *BlueprintHandler) GetResourceContent(ctx context.Context, _ model.Resou
 }
 
 func (h *BlueprintHandler) Prepare(ctx context.Context, fs vfs.FileSystem) (*model.TypedResourceContent, error) {
-	bp, err := blueprint.BuildBlueprintFromPath(fs, "/")
+	bp, err := componentscommon.BuildBlueprintFromPath(fs, "/")
 	if err != nil {
 		return nil, err
 	}

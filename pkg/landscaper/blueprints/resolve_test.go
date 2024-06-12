@@ -19,7 +19,6 @@ import (
 	lsv1alpha1 "github.com/gardener/landscaper/apis/core/v1alpha1"
 	"github.com/gardener/landscaper/apis/mediatype"
 	"github.com/gardener/landscaper/controller-utils/pkg/logging"
-	"github.com/gardener/landscaper/pkg/components/cache/blueprint"
 	"github.com/gardener/landscaper/pkg/components/cnudie/componentresolvers"
 	"github.com/gardener/landscaper/pkg/components/model/types"
 	"github.com/gardener/landscaper/pkg/components/registries"
@@ -52,12 +51,8 @@ var _ = Describe("Resolve", func() {
 	// TODO: remove with component-cli
 	Context("ResolveBlueprintFromBlobResolver", func() {
 		It("should resolve a blueprint from a blobresolver", func() {
-			store, err := blueprint.NewStore(logging.Discard(), memoryfs.New(), defaultStoreConfig)
-			Expect(err).ToNot(HaveOccurred())
-			blueprint.SetStore(store)
-
 			memFs := memoryfs.New()
-			err = bputils.NewBuilder().Blueprint(&lsv1alpha1.Blueprint{
+			err := bputils.NewBuilder().Blueprint(&lsv1alpha1.Blueprint{
 				Annotations: map[string]string{
 					"test": "val",
 				},
@@ -113,12 +108,8 @@ var _ = Describe("Resolve", func() {
 
 		// TODO: remove with component-cli
 		It("should resolve a blueprint from a blobresolver with a gzipped blueprint", func() {
-			store, err := blueprint.NewStore(logging.Discard(), memoryfs.New(), defaultStoreConfig)
-			Expect(err).ToNot(HaveOccurred())
-			blueprint.SetStore(store)
-
 			memFs := memoryfs.New()
-			err = bputils.NewBuilder().Blueprint(&lsv1alpha1.Blueprint{
+			err := bputils.NewBuilder().Blueprint(&lsv1alpha1.Blueprint{
 				Annotations: map[string]string{
 					"test": "val",
 				},
@@ -174,14 +165,10 @@ var _ = Describe("Resolve", func() {
 
 		// TODO: remove with component-cli
 		It("should throw an error if a blueprint is received corrupted", func() {
-			store, err := blueprint.NewStore(logging.Discard(), memoryfs.New(), defaultStoreConfig)
-			Expect(err).ToNot(HaveOccurred())
-			blueprint.SetStore(store)
-
 			mediaType := mediatype.NewBuilder(mediatype.BlueprintArtifactsLayerMediaTypeV1).String()
 
 			memFs := memoryfs.New()
-			err = memFs.MkdirAll("blobs", 0o777)
+			err := memFs.MkdirAll("blobs", 0o777)
 			Expect(err).ToNot(HaveOccurred())
 			file, err := memFs.Create("blobs/bp.tar")
 			Expect(err).ToNot(HaveOccurred())
@@ -233,14 +220,10 @@ var _ = Describe("Resolve", func() {
 
 		// TODO: remove with component-cli
 		It("should throw an error if a blueprint is received corrupted with gzipped media type", func() {
-			store, err := blueprint.NewStore(logging.Discard(), memoryfs.New(), defaultStoreConfig)
-			Expect(err).ToNot(HaveOccurred())
-			blueprint.SetStore(store)
-
 			mediaType := mediatype.NewBuilder(mediatype.BlueprintArtifactsLayerMediaTypeV1).Compression(mediatype.GZipCompression).String()
 
 			memFs := memoryfs.New()
-			err = memFs.MkdirAll("blobs", 0o777)
+			err := memFs.MkdirAll("blobs", 0o777)
 			Expect(err).ToNot(HaveOccurred())
 			file, err := memFs.Create("blobs/bp.tar")
 			Expect(err).ToNot(HaveOccurred())
