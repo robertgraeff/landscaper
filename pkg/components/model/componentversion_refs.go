@@ -16,6 +16,59 @@ import (
 	"github.com/gardener/landscaper/pkg/components/model/types"
 )
 
+type Job struct {
+	ctx               context.Context
+	componentVersion  ComponentVersion
+	repositoryContext *types.UnstructuredTypedObject
+	overwriter        componentoverwrites.Overwriter
+	cds               map[componentIdentifier]ComponentVersion
+	jobs              map[string]*Job
+}
+
+func (j *Job) execute() error {
+	logger, ctx := logging.FromContextOrNew(j.ctx, nil)
+	pm := utils.StartPerformanceMeasurement(&logger, "getTransitiveComponentReferencesRecursively")
+	defer pm.StopDebug()
+
+	cid := componentIdentifier{
+		Name:    j.componentVersion.GetName(),
+		Version: j.componentVersion.GetVersion(),
+	}
+	if _, ok := j.cds[cid]; !ok {
+		j.cds[cid] = j.componentVersion
+
+		cdRepositoryContext := j.componentVersion.GetRepositoryContext()
+		if cdRepositoryContext == nil {
+			return errors.New("component descriptor must at least contain one repository context with a base url")
+		}
+
+		cdComponentReferences := j.componentVersion.GetComponentReferences()
+
+		for _, compRef := range cdComponentReferences {
+			referencedComponentVersion, err := j.componentVersion.GetReferencedComponentVersion(ctx, &compRef, j.repositoryContext, j.overwriter)
+			if err != nil {
+				return fmt.Errorf("unable to resolve component reference %s with component name %s and version %s: %w",
+					compRef.Name, compRef.ComponentName, compRef.Version, err)
+			}
+
+			newJob := &Job{
+				ctx:               ctx,
+				componentVersion:  referencedComponentVersion,
+				repositoryContext: j.repositoryContext,
+				overwriter:        j.overwriter,
+				cds:               j.cds,
+				jobs:              j.jobs,
+			}
+
+			j.jobs[getVersionKey(referencedComponentVersion)] = newJob
+		}
+	}
+
+	delete(j.jobs, getVersionKey(j.componentVersion))
+	return nil
+
+}
+
 // GetTransitiveComponentReferences returns a list of ComponentVersions that consists of the current one
 // and all which are transitively referenced by it.
 func GetTransitiveComponentReferences(ctx context.Context,
@@ -28,8 +81,27 @@ func GetTransitiveComponentReferences(ctx context.Context,
 	defer pm.StopDebug()
 
 	cds := map[componentIdentifier]ComponentVersion{}
-	if err := getTransitiveComponentReferencesRecursively(ctx, componentVersion, repositoryContext, overwriter, cds); err != nil {
-		return nil, err
+
+	jobs := map[string]*Job{}
+
+	newJob := &Job{
+		ctx:               ctx,
+		componentVersion:  componentVersion,
+		repositoryContext: repositoryContext,
+		overwriter:        overwriter,
+		cds:               cds,
+		jobs:              jobs,
+	}
+
+	jobs[getVersionKey(componentVersion)] = newJob
+
+	for len(jobs) > 0 {
+		for key := range jobs {
+			if err := jobs[key].execute(); err != nil {
+				return nil, err
+			}
+			break
+		}
 	}
 
 	cdList := make([]ComponentVersion, len(cds))
@@ -48,53 +120,11 @@ func GetTransitiveComponentReferences(ctx context.Context,
 	}, nil
 }
 
+func getVersionKey(version ComponentVersion) string {
+	return version.GetName() + "/" + version.GetVersion()
+}
+
 type componentIdentifier struct {
 	Name    string
 	Version string
-}
-
-// getTransitiveComponentReferencesRecursively is a helper function which fetches all referenced component descriptor,
-// including the referencing one the fetched CDs are stored in the given 'cds' map to avoid duplicates
-func getTransitiveComponentReferencesRecursively(ctx context.Context,
-	cd ComponentVersion,
-	repositoryContext *types.UnstructuredTypedObject,
-	overwriter componentoverwrites.Overwriter,
-	cds map[componentIdentifier]ComponentVersion) error {
-
-	logger, ctx := logging.FromContextOrNew(ctx, nil)
-	pm := utils.StartPerformanceMeasurement(&logger, "getTransitiveComponentReferencesRecursively")
-	defer pm.StopDebug()
-
-	cid := componentIdentifier{
-		Name:    cd.GetName(),
-		Version: cd.GetVersion(),
-	}
-	if _, ok := cds[cid]; ok {
-		// we have already handled this component before, no need to do it again
-		return nil
-	}
-	cds[cid] = cd
-
-	cdRepositoryContext := cd.GetRepositoryContext()
-	if cdRepositoryContext == nil {
-		return errors.New("component descriptor must at least contain one repository context with a base url")
-	}
-
-	cdComponentReferences := cd.GetComponentReferences()
-
-	for _, compRef := range cdComponentReferences {
-		referencedComponentVersion, err := cd.GetReferencedComponentVersion(ctx, &compRef, repositoryContext, overwriter)
-		if err != nil {
-			return fmt.Errorf("unable to resolve component reference %s with component name %s and version %s: %w",
-				compRef.Name, compRef.ComponentName, compRef.Version, err)
-		}
-
-		err = getTransitiveComponentReferencesRecursively(ctx, referencedComponentVersion, repositoryContext, overwriter, cds)
-		if err != nil {
-			return fmt.Errorf("unable to resolve component references for component descriptor %s with version %s: %w",
-				compRef.Name, compRef.Version, err)
-		}
-	}
-
-	return nil
 }
