@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 
 	"github.com/gardener/landscaper/controller-utils/pkg/logging"
 	"github.com/gardener/landscaper/pkg/utils"
@@ -22,7 +23,35 @@ type Job struct {
 	repositoryContext *types.UnstructuredTypedObject
 	overwriter        componentoverwrites.Overwriter
 	cds               map[componentIdentifier]ComponentVersion
-	jobs              map[string]*Job
+	jobs              *JobSet
+}
+
+type JobSet struct {
+	sync.Mutex
+	jobs map[componentIdentifier]*Job
+}
+
+func (s *JobSet) addJob(job *Job) {
+	s.Mutex.Lock()
+	defer s.Mutex.Unlock()
+	s.jobs[getComponentIdentifier(job.componentVersion)] = job
+}
+
+func (s *JobSet) getAndDeleteJob() *Job {
+	s.Mutex.Lock()
+	defer s.Mutex.Unlock()
+	for key := range s.jobs {
+		job := s.jobs[key]
+		delete(s.jobs, getComponentIdentifier(job.componentVersion))
+		return job
+	}
+	return nil
+}
+
+func NewJobSet() *JobSet {
+	return &JobSet{
+		jobs: make(map[componentIdentifier]*Job),
+	}
 }
 
 func (j *Job) execute() error {
@@ -60,11 +89,10 @@ func (j *Job) execute() error {
 				jobs:              j.jobs,
 			}
 
-			j.jobs[getVersionKey(referencedComponentVersion)] = newJob
+			j.jobs.addJob(newJob)
 		}
 	}
 
-	delete(j.jobs, getVersionKey(j.componentVersion))
 	return nil
 
 }
@@ -82,7 +110,7 @@ func GetTransitiveComponentReferences(ctx context.Context,
 
 	cds := map[componentIdentifier]ComponentVersion{}
 
-	jobs := map[string]*Job{}
+	jobs := NewJobSet()
 
 	newJob := &Job{
 		ctx:               ctx,
@@ -93,14 +121,11 @@ func GetTransitiveComponentReferences(ctx context.Context,
 		jobs:              jobs,
 	}
 
-	jobs[getVersionKey(componentVersion)] = newJob
+	jobs.addJob(newJob)
 
-	for len(jobs) > 0 {
-		for key := range jobs {
-			if err := jobs[key].execute(); err != nil {
-				return nil, err
-			}
-			break
+	for job := jobs.getAndDeleteJob(); job != nil; {
+		if err := job.execute(); err != nil {
+			return nil, err
 		}
 	}
 
@@ -120,8 +145,11 @@ func GetTransitiveComponentReferences(ctx context.Context,
 	}, nil
 }
 
-func getVersionKey(version ComponentVersion) string {
-	return version.GetName() + "/" + version.GetVersion()
+func getComponentIdentifier(componentVersion ComponentVersion) componentIdentifier {
+	return componentIdentifier{
+		Name:    componentVersion.GetName(),
+		Version: componentVersion.GetVersion(),
+	}
 }
 
 type componentIdentifier struct {
