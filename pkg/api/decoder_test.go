@@ -5,6 +5,8 @@
 package api_test
 
 import (
+	"dario.cat/mergo"
+	"fmt"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -49,5 +51,81 @@ number: 2
 		_, _, err := api.NewDecoder(scheme).Decode([]byte(data), nil, res)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(res.NumberString).To(Equal("2"))
+	})
+
+	It("ttt1", func() {
+
+		type Foo map[string]interface{}
+
+		dest := map[string]interface{}{
+			"rules": []map[string][]string{
+				{
+					"apiGroups": {
+						"*",
+					},
+					"resources": {
+						"pods",
+					},
+					"verbs": {
+						"get",
+						"list",
+					},
+				},
+			},
+		}
+
+		src := map[string]interface{}{
+			"rules": []map[string][]string{
+				{
+					"apiGroups": {
+						"*",
+					},
+					"resources": {
+						"names",
+					},
+					"verbs": {
+						"watch",
+					},
+				},
+			},
+		}
+
+		var mergeOpts []func(config *mergo.Config)
+
+		mergeOpts = []func(*mergo.Config){
+			mergo.WithOverride,
+		}
+
+		mergo.Merge(&dest, &src, mergeOpts...)
+		fmt.Println(dest)
+
+		src2 := map[string][]map[string]interface{}{
+			"partners": {
+				{
+
+					"common":  "common_field",
+					"enabled": true,
+				},
+				{
+					"name":    "new_src_element",
+					"enabled": false,
+				},
+			},
+		}
+		dest2 := map[string][]map[string]interface{}{
+			"partners": {
+				{
+					"common":  "common_field",
+					"enabled": false,
+				},
+				{
+					"name":    "new_dest_element",
+					"enabled": false,
+				},
+			},
+		}
+		mergo.Merge(&dest2, src2, mergo.WithOverride)
+		fmt.Println(dest2)
+
 	})
 })
